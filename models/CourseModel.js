@@ -1,21 +1,46 @@
 const Datastore = require('nedb');
-const db = new Datastore({ filename: 'data/courses.db', autoload: true });
+const path = require('path');
+
+const db = new Datastore({ filename: path.join(__dirname, '../data/courses.db'), autoload: true });
 
 class CourseModel {
-    getAll(callback) {
-        // TODO: Get all active/upcoming courses that have classes
+    async getAll() {
+        return new Promise((resolve, reject) => {
+            db.find({}).sort({ startDate: 1 }).exec((err, docs) => {
+                if (err) return reject(err);
+                resolve(docs);
+            });
+        });
     }
 
-    getById(id, callback) {
-        // TODO: Get course by ID
+    async getById(id) {
+        return new Promise((resolve, reject) => {
+            db.findOne({ _id: String(id) }, (err, doc) => {
+                if (err) return reject(err);
+                resolve(doc);
+            });
+        });
     }
 
-    add(courseData, callback) {
-        // TODO: Validate and add a new course
+    async add(course) {
+        return new Promise((resolve, reject) => {
+            db.insert(course, (err, newDoc) => {
+                if (err) return reject(err);
+                resolve(newDoc);
+            });
+        });
     }
 
-    deleteById(id, callback) {
-        // TODO: Delete course and related classes and registrations
+    async deleteById(id) {
+        return new Promise((resolve, reject) => {
+            db.remove({ _id: String(id) }, {}, (err, numRemoved) => {
+                if (err) return reject(err);
+                db.persistence.compactDatafile();
+                resolve(numRemoved);
+            });
+
+        });
+
     }
 }
 
