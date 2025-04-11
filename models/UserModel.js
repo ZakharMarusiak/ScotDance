@@ -14,7 +14,10 @@ class UserModel {
     }
 
     findByUsername(username, callback) {
-        // TODO: Find organiser by username
+        db.findOne({ username }, (err, user) => {
+            if (err) return callback(err, null);
+            return callback(null, user);
+        });
     }
 
     getAll(callback) {

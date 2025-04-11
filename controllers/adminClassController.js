@@ -7,7 +7,7 @@ exports.listClasses = (req, res) => {
 };
 
 exports.renderAddForm = (req, res) => {
-    res.render('admin/class-form', { title: 'Add Class' });
+    res.render('/class-form', { title: 'Add Class' });
 };
 
 exports.createClass = (req, res) => {
@@ -15,7 +15,7 @@ exports.createClass = (req, res) => {
 };
 
 exports.renderEditForm = (req, res) => {
-    res.render('admin/class-form', { title: 'Edit Class' });
+    res.render('/class-form', { title: 'Edit Class' });
 };
 
 exports.updateClass = (req, res) => {
@@ -26,8 +26,8 @@ exports.deleteClass = (req, res) => {
     console.log('Start');
 };
 
-exports.renderEditForm = (req, res) => {
-    res.render('admin/class-form', { title: 'Edit Class' });
+exports.viewParticipants = (req, res) => {
+    res.render('/participants', { title: 'Class Participants' });
 };
 
 exports.deleteParticipant = (req, res) => {

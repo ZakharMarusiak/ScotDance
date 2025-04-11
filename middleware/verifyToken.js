@@ -4,7 +4,7 @@ const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
 
     if (!token) {
-        return res.redirect('/auth/keyboard-cat-zone-login');
+        return res.redirect('/keyboard-cat-zone-login');
     }
 
     try {
@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
         res.locals.user = { username: decoded.username };
         next();
     } catch (err) {
-        return res.redirect('/auth/keyboard-cat-zone-login');
+        return res.redirect('/keyboard-cat-zone-login');
     }
 };
 

@@ -3,6 +3,8 @@ const path = require('path');
 const mustacheExpress = require('mustache-express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const attachUser = require('./middleware/attachUser');
+const verifyToken = require('./middleware/verifyToken');
 
 // Initialization
 const app = express();
@@ -25,6 +27,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(attachUser);
 
 // Routes
 const indexRoutes = require('./routes/indexRoutes');
@@ -38,13 +41,7 @@ const adminUserRoutes = require('./routes/adminUserRoutes');
 app.use('/', indexRoutes);
 app.use('/courses', courseRoutes);
 app.use('/register', registrationRoutes);
-app.use('/auth', authRoutes);
-
-const attachUser = require('./middleware/attachUser');
-const verifyToken = require('./middleware/verifyToken');
-
-app.use(attachUser);
-
+app.use(authRoutes);
 app.use('/admin/courses', verifyToken, adminCoursesRoutes);
 app.use('/admin/classes', verifyToken, adminClassesRoutes);
 app.use('/admin/organisers', verifyToken, adminUserRoutes);
