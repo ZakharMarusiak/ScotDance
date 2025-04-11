@@ -3,11 +3,11 @@ const RegistrationModel = require('../models/RegistrationModel');
 const CourseModel = require('../models/CourseModel');
 
 exports.listClasses = (req, res) => {
-    console.log('Start');
+    res.render('admin/classes', { title: 'Admin – Manage Classes' });
 };
 
 exports.renderAddForm = (req, res) => {
-    console.log('Start');
+    res.render('admin/class-form', { title: 'Add Class' });
 };
 
 exports.createClass = (req, res) => {
@@ -15,7 +15,7 @@ exports.createClass = (req, res) => {
 };
 
 exports.renderEditForm = (req, res) => {
-    console.log('Start');
+    res.render('admin/class-form', { title: 'Edit Class' });
 };
 
 exports.updateClass = (req, res) => {
@@ -26,8 +26,8 @@ exports.deleteClass = (req, res) => {
     console.log('Start');
 };
 
-exports.viewParticipants = (req, res) => {
-    console.log('Start');
+exports.renderEditForm = (req, res) => {
+    res.render('admin/class-form', { title: 'Edit Class' });
 };
 
 exports.deleteParticipant = (req, res) => {

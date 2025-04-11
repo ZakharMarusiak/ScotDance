@@ -1,3 +1,3 @@
 exports.renderHomePage = (req, res) => {
-    console.log('Start');
+    res.render('public/index', { title: 'Home' });
 };

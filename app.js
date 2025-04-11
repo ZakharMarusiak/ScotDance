@@ -25,9 +25,8 @@ app.use((req, res, next) => {
     next();
 });
 
-const authMiddleware = require('./middleware/authMiddleware');
 
-// Public routes
+// Routes
 const indexRoutes = require('./routes/indexRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
@@ -40,8 +39,14 @@ app.use('/', indexRoutes);
 app.use('/courses', courseRoutes);
 app.use('/register', registrationRoutes);
 app.use('/auth', authRoutes);
-app.use('/admin/courses', authMiddleware, adminCoursesRoutes);
-app.use('/admin/classes', authMiddleware, adminClassesRoutes);
-app.use('/admin/organisers', authMiddleware, adminUserRoutes);
+
+const attachUser = require('./middleware/attachUser');
+const verifyToken = require('./middleware/verifyToken');
+
+app.use(attachUser);
+
+app.use('/admin/courses', verifyToken, adminCoursesRoutes);
+app.use('/admin/classes', verifyToken, adminClassesRoutes);
+app.use('/admin/organisers', verifyToken, adminUserRoutes);
 
 module.exports = app;

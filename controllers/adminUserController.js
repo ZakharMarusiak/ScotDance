@@ -1,7 +1,7 @@
 const UserModel = require('../models/UserModel');
 
 exports.listOrganisers = (req, res) => {
-    console.log('Start');
+    res.render('admin/users', { title: 'Admin – Manage Organisers' });
 };
 
 exports.addOrganiser = (req, res) => {

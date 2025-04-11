@@ -3,7 +3,7 @@ const ClassModel = require('../models/ClassModel');
 const RegistrationModel = require('../models/RegistrationModel');
 
 exports.listCourses = (req, res) => {
-    console.log('Start');
+    res.render('admin/courses', { title: 'Admin – Manage Courses' });
 };
 
 exports.createCourse = (req, res) => {

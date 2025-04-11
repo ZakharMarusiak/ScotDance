@@ -2,17 +2,17 @@ const ClassModel = require('../models/ClassModel');
 const RegistrationModel = require('../models/RegistrationModel');
 
 exports.renderClassForm = (req, res) => {
-    console.log('Start');
+    res.render('public/register', { title: 'Register for Class' });
 };
 
 exports.handleClassRegistration = (req, res) => {
-    console.log('Start');
+    res.send('Class registration logic goes here');
 };
 
 exports.renderCourseForm = (req, res) => {
-    console.log('Start');
+    res.render('public/register', { title: 'Register for Course' });
 };
 
 exports.handleCourseRegistration = (req, res) => {
-    console.log('Start');
+    res.send('Course registration logic goes here');
 };

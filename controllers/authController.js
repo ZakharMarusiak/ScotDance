@@ -1,13 +1,13 @@
 const UserModel = require('../models/UserModel');
 
 exports.renderLogin = (req, res) => {
-    console.log('Start');
+    res.render('public/login', { title: 'Login' });
 };
 
 exports.handleLogin = (req, res) => {
-    console.log('Start');
+    res.send('Login logic goes here');
 };
 
 exports.logout = (req, res) => {
-    console.log('Start');
-};
+    res.send('Logout logic goes here');
+};  

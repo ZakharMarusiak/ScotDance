@@ -2,9 +2,9 @@ const CourseModel = require('../models/CourseModel');
 const ClassModel = require('../models/ClassModel');
 
 exports.listCourses = (req, res) => {
-    console.log('Start');
+    res.render('public/courses', { title: 'Courses' });
 };
 
 exports.viewCourseDetails = (req, res) => {
-    console.log('Start');
-};
+    res.render('public/course-details', { title: 'Course Details' });
+};  

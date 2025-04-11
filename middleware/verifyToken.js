@@ -4,15 +4,15 @@ const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
 
     if (!token) {
-        return res.redirect('/keyboard-cat-zone-login');
+        return res.redirect('/auth/keyboard-cat-zone-login');
     }
 
     try {
         const decoded = jwt.verify(token, 'SECRET_KEY');
-        res.locals.user = decoded;
+        res.locals.user = { username: decoded.username };
         next();
     } catch (err) {
-        return res.redirect('/keyboard-cat-zone-login');
+        return res.redirect('/auth/keyboard-cat-zone-login');
     }
 };
 
