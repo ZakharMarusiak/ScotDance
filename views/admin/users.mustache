@@ -1,4 +1,54 @@
 {{> partials/head}}
-<h1>Admin – Manage Organisers</h1>
-<p>List of organisers and user creation form. Under construction.</p>
+
+<h1>Manage Organisers</h1>
+
+{{#error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/error}}
+
+
+<form action="/admin/organisers/add" method="POST" class="mb-5">
+<h2>Add Organiser</h2>
+  <div class="row g-3">
+    <div class="col-md-5">
+      <input type="text" class="form-control" name="username" placeholder="Username" required>
+    </div>
+    <div class="col-md-5">
+      <input type="password" class="form-control" name="password" placeholder="Password" required>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-success w-100">Add</button>
+    </div>
+  </div>
+</form>
+
+<h2>Existing Organisers</h2>
+
+{{#users.length}}
+<table class="table table-bordered align-middle mt-3">
+  <thead class="table-light">
+    <tr>
+      <th>Username</th>
+      <th style="width: 150px">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#users}}
+    <tr>
+      <td>{{username}}</td>
+      <td>
+        <form action="/admin/organisers/delete/{{_id}}" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{/users}}
+  </tbody>
+</table>
+{{/users.length}}
+
+{{^users.length}}
+  <p class="text-muted">No organisers created yet.</p>
+{{/users.length}}
+
 {{> partials/footer}}

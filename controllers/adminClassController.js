@@ -227,10 +227,10 @@ exports.deleteClass = async (req, res) => {
     }
 };
 
-exports.viewParticipants = (req, res) => {
-    res.render('admin/participants', { title: 'Class Participants' });
+exports.viewRegistrations = (req, res) => {
+    res.render('admin/registrations', { title: 'Class Participants' });
 };
 
-exports.deleteParticipant = (req, res) => {
+exports.deleteRegistrations = (req, res) => {
     console.log('Start');
 };

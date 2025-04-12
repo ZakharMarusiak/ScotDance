@@ -78,9 +78,12 @@ exports.deleteCourse = async (req, res) => {
         const courseToDelete = await CourseModel.getById(id);
         if (courseToDelete?.image) {
             const imagePath = path.join(__dirname, '../public/', courseToDelete.image);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
+            if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+        }
+
+        const classes = await ClassModel.getByCourseId(id);
+        for (const cls of classes) {
+            await ClassModel.deleteById(cls._id);
         }
 
         await CourseModel.deleteById(id);
@@ -91,4 +94,4 @@ exports.deleteCourse = async (req, res) => {
             error: 'Failed to delete course.'
         });
     }
-};  
+};

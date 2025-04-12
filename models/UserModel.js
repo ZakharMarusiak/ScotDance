@@ -1,27 +1,41 @@
 const Datastore = require('nedb');
 const bcrypt = require('bcrypt');
-const db = new Datastore({ filename: 'data/users.db', autoload: true });
+const path = require('path');
 
+const db = new Datastore({ filename: path.join(__dirname, '../data/users.db'), autoload: true });
 const SALT_ROUNDS = 10;
 
 class UserModel {
-    addUser(userObj, callback) {
-        // TODO: Add new organiser with unique username and hashed password
-    }
-
-    deleteById(id, callback) {
-        // TODO: Delete organiser by ID
+    add({ username, password }, callback) {
+        bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
+            if (err) return callback(err);
+            db.insert({ username, password: hash }, (err, newDoc) => {
+                if (err) return callback(err);
+                callback(null, newDoc);
+            });
+        });
     }
 
     findByUsername(username, callback) {
         db.findOne({ username }, (err, user) => {
-            if (err) return callback(err, null);
-            return callback(null, user);
+            if (err) return callback(err);
+            callback(null, user);
         });
     }
 
     getAll(callback) {
-        // TODO: Get all organisers
+        db.find({}, (err, users) => {
+            if (err) return callback(err);
+            callback(null, users);
+        });
+    }
+
+    deleteById(id, callback) {
+        db.remove({ _id: id }, {}, (err, numRemoved) => {
+            if (err) return callback(err);
+            db.persistence.compactDatafile();
+            callback(null, numRemoved);
+        });
     }
 }
 

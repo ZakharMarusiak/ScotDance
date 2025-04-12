@@ -1,8 +1,8 @@
 const Datastore = require('nedb');
 const db = new Datastore({ filename: './data/classes.db', autoload: true });
 
-module.exports = {
-    add(courseId, data) {
+class ClassModel {
+    async add(courseId, data) {
         return new Promise((resolve, reject) => {
             const classData = {
                 ...data,
@@ -17,9 +17,9 @@ module.exports = {
                 else resolve(newDoc);
             });
         });
-    },
+    }
 
-    getByCourseId(courseId) {
+    async getByCourseId(courseId) {
         return new Promise((resolve, reject) => {
             db.find({ courseId }, (err, docs) => {
                 if (err) reject(err);
@@ -33,18 +33,18 @@ module.exports = {
                 }
             });
         });
-    },
+    }
 
-    getById(classId) {
+    async getById(classId) {
         return new Promise((resolve, reject) => {
             db.findOne({ _id: classId }, (err, doc) => {
                 if (err) reject(err);
                 else resolve(doc);
             });
         });
-    },
+    }
 
-    updateById(classId, updatedData) {
+    async updateById(classId, updatedData) {
         return new Promise((resolve, reject) => {
             db.update({ _id: classId }, { $set: updatedData }, {}, (err, numReplaced) => {
                 if (err) return reject(err);
@@ -52,10 +52,10 @@ module.exports = {
                 resolve(numReplaced);
             });
         });
-    },
+    }
 
 
-    deleteById(classId) {
+    async deleteById(classId) {
         return new Promise((resolve, reject) => {
             db.remove({ _id: classId }, {}, (err, numRemoved) => {
                 if (err) return reject(err);
@@ -65,4 +65,6 @@ module.exports = {
         });
     }
 
-};
+}
+
+module.exports = new ClassModel();
