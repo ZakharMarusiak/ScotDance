@@ -1,4 +1,46 @@
 {{> partials/head}}
-<h1>Admin – Manage Classes</h1>
-<p>Class list for selected course. Under construction.</p>
+
+<h1>Manage Classes for "{{course.name}}"</h1>
+<p class="text-muted">
+  {{startDateFormatted}} – {{endDateFormatted}}
+</p>
+
+{{#error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/error}}
+
+<a href="/admin/classes/{{course._id}}/add" class="btn btn-success mb-4">Add Class</a>
+
+{{#classes.length}}
+<div class="accordion" id="classAccordion">
+  {{#classes}}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="heading-{{_id}}">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{_id}}">
+        {{title}} — {{dayFormatted}} ({{startFormatted}}–{{endFormatted}})
+      </button>
+    </h2>
+    <div id="collapse-{{_id}}" class="accordion-collapse collapse" data-bs-parent="#classAccordion">
+      <div class="accordion-body">
+        <p><strong>Description:</strong> {{description}}</p>
+        <p><strong>Location:</strong> {{location}}</p>
+        <p><strong>Price:</strong> £{{price}}</p>
+        <div class="mt-3">
+          <a href="/admin/classes/{{courseId}}/edit/{{_id}}" class="btn btn-sm btn-warning">Modify</a>
+          <form action="/admin/classes/{{courseId}}/delete/{{_id}}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          </form>
+          <a href="/admin/classes/{{courseId}}/view-participants/{{_id}}" class="btn btn-sm btn-outline-primary">View Participants</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/classes}}
+</div>
+{{/classes.length}}
+
+{{^classes.length}}
+<p class="text-muted">No classes created for this course yet.</p>
+{{/classes.length}}
+
 {{> partials/footer}}

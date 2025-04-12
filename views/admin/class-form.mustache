@@ -1,4 +1,49 @@
 {{> partials/head}}
-<h1>Admin – Add/Edit Class</h1>
-<p>Shared form for adding or editing a class. Under construction.</p>
+
+<h1>{{title}}</h1>
+
+{{#error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/error}}
+
+<form action="" method="POST" class="mb-4">
+  <div class="mb-3">
+    <label for="title" class="form-label">Class Title</label>
+    <input type="text" class="form-control" name="title" required value="{{class.title}}">
+  </div>
+
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" name="description" required>{{class.description}}</textarea>
+  </div>
+
+  <div class="mb-3">
+    <label for="location" class="form-label">Location</label>
+    <input type="text" class="form-control" name="location" required value="{{class.location}}">
+  </div>
+
+  <div class="row mb-3">
+    <div class="col">
+      <label for="day" class="form-label">Date</label>
+      <input type="date" class="form-control" name="day" required value="{{class.day}}">
+    </div>
+    <div class="col">
+      <label for="startTime" class="form-label">Start Time</label>
+      <input type="time" class="form-control" name="startTime" required value="{{class.startTime}}">
+    </div>
+    <div class="col">
+      <label for="endTime" class="form-label">End Time</label>
+      <input type="time" class="form-control" name="endTime" required value="{{class.endTime}}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="price" class="form-label">Price (£)</label>
+    <input type="number" class="form-control" name="price" min="0" step="0.01" required value="{{class.price}}">
+  </div>
+
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="/admin/classes/{{course._id}}" class="btn btn-secondary ms-2">Back</a>
+</form>
+
 {{> partials/footer}}
