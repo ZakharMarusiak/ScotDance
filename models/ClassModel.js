@@ -19,6 +19,15 @@ class ClassModel {
         });
     }
 
+    async getAll() {
+        return new Promise((resolve, reject) => {
+            db.find({}, (err, docs) => {
+                if (err) return reject(err);
+                resolve(docs);
+            });
+        });
+    }
+
     async getByCourseId(courseId) {
         return new Promise((resolve, reject) => {
             db.find({ courseId }, (err, docs) => {

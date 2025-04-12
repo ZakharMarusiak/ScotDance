@@ -1,4 +1,76 @@
 {{> partials/head}}
-<h1>Course Details</h1>
-<p>Details and class list for selected course. Under construction.</p>
+
+{{#error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/error}}
+
+<div class="row">
+  <div class="col-md-5">
+    {{#course.image}}
+      <img src="/{{course.image}}" class="img-fluid rounded shadow-sm mb-3" style="object-fit: cover; height: 300px; width: 100%;">
+    {{/course.image}}
+    {{^course.image}}
+      <div class="bg-secondary text-white text-center py-5 rounded mb-3">No Image</div>
+    {{/course.image}}
+  </div>
+  <div class="col-md-7">
+    <h1>{{course.name}}</h1>
+    <p><strong>Duration:</strong> {{course.startDateFormatted}} – {{course.endDateFormatted}}</p>
+    <span class="badge {{course.badgeClass}}">{{course.status}}</span>
+
+    <div class="mt-4">
+      {{#showEnrollButton}}
+        <a href="/register/course/{{course._id}}" class="btn btn-primary">Enroll in Course</a>
+      {{/showEnrollButton}}
+
+      {{#courseEnded}}
+        <p class="text-muted mt-2">This course has ended. Registration is closed.</p>
+      {{/courseEnded}}
+
+      {{#noClasses}}
+        <p class="text-muted mt-2">This course currently has no classes.</p>
+      {{/noClasses}}
+    </div>
+  </div>
+</div>
+
+<hr class="my-5">
+<h2>Classes</h2>
+
+{{#classes.length}}
+<div class="row row-cols-1 row-cols-md-2 g-4 mt-2">
+  {{#classes}}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{title}}</h5>
+        <p><strong>Date:</strong> {{dayFormatted}}</p>
+        <p><strong>Time:</strong> {{timeRange}}</p>
+        <p><strong>Location:</strong> {{location}}</p>
+        <p><strong>Price:</strong> £{{price}}</p>
+        <span class="badge {{badgeClass}}">{{status}}</span>
+      </div>
+      <div class="card-footer bg-transparent border-0">
+        {{#isUpcoming}}
+          <a href="/register/class/{{_id}}" class="btn btn-sm btn-success w-100">Book this Class</a>
+        {{/isUpcoming}}
+
+        {{#isActive}}
+          <div class="text-muted text-center">Class is in progress</div>
+        {{/isActive}}
+
+        {{#isEnded}}
+          <div class="text-muted text-center">Class has ended</div>
+        {{/isEnded}}
+      </div>
+    </div>
+  </div>
+  {{/classes}}
+</div>
+{{/classes.length}}
+
+{{^classes.length}}
+  <p class="text-muted mt-4">No classes available for this course.</p>
+{{/classes.length}}
+
 {{> partials/footer}}
