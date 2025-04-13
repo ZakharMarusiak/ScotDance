@@ -227,10 +227,57 @@ exports.deleteClass = async (req, res) => {
     }
 };
 
-exports.viewRegistrations = (req, res) => {
-    res.render('admin/registrations', { title: 'Class Participants' });
+exports.viewRegistrations = async (req, res) => {
+    const { courseId, classId } = req.params;
+
+    function formatDateTime(date) {
+        const d = new Date(date);
+        const pad = n => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    try {
+        const registrations = await RegistrationModel.findByClassId(classId);
+        const cls = await ClassModel.getById(classId);
+        const course = await CourseModel.getById(courseId);
+
+        if (!cls || !course) {
+            return res.render('admin/registrations', {
+                title: 'Registrations',
+                error: 'Course or class not found.'
+            });
+        }
+
+        const formattedRegistrations = registrations.map(r => ({
+            ...r,
+            registrationDateFormatted: formatDateTime(r.registrationDate)
+        }));
+
+        res.render('admin/registrations', {
+            title: `Registrations for "${cls.title}"`,
+            registrations: formattedRegistrations,
+            course,
+            cls
+        });
+
+    } catch {
+        res.render('admin/registrations', {
+            title: 'Registrations',
+            error: 'Unable to load registrations.'
+        });
+    }
 };
 
-exports.deleteRegistrations = (req, res) => {
-    console.log('Start');
+exports.deleteRegistration = async (req, res) => {
+    const { courseId, classId, registrationId } = req.params;
+
+    try {
+        await RegistrationModel.deleteById(registrationId);
+        res.redirect(`/admin/classes/${courseId}/registrations/${classId}`);
+    } catch {
+        res.render(`/admin/classes/${courseId}/registrations/${classId}`, {
+            title: 'Registrations',
+            error: 'Failed to delete registration.'
+        });
+    }
 };

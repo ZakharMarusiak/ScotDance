@@ -6,17 +6,23 @@ function formatDate(date) {
     return d.toISOString().split('T')[0];
 }
 
-function getStatus(date) {
+function getStatus(day, startTime, endTime) {
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
 
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
 
-    if (now < d) return { status: 'upcoming', badgeClass: 'bg-success' };
-    if (now.getTime() === d.getTime()) return { status: 'active', badgeClass: 'bg-warning text-dark' };
+    const start = new Date(day);
+    start.setHours(startHour, startMin, 0, 0);
+
+    const end = new Date(day);
+    end.setHours(endHour, endMin, 0, 0);
+
+    if (now < start) return { status: 'upcoming', badgeClass: 'bg-success' };
+    if (now >= start && now <= end) return { status: 'active', badgeClass: 'bg-warning text-dark' };
     return { status: 'ended', badgeClass: 'bg-secondary' };
 }
+
 
 function getCourseStatus(startDate, endDate) {
     const now = new Date();
@@ -85,7 +91,7 @@ exports.viewCourseDetails = async (req, res) => {
         };
 
         const formattedClasses = classes.map(cls => {
-            const statusObj = getStatus(cls.day);
+            const statusObj = getStatus(cls.day, cls.startTime, cls.endTime);
             return {
                 ...cls,
                 dayFormatted: formatDate(cls.day),

@@ -5,10 +5,6 @@
   {{startDateFormatted}} – {{endDateFormatted}}
 </p>
 
-{{#error}}
-  <div class="alert alert-danger">{{error}}</div>
-{{/error}}
-
 <a href="/admin/classes/{{course._id}}/add" class="btn btn-success mb-4">Add Class</a>
 
 {{#classes.length}}
@@ -30,7 +26,7 @@
           <form action="/admin/classes/{{courseId}}/delete/{{_id}}" method="POST" class="d-inline">
             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
           </form>
-          <a href="/admin/classes/{{courseId}}/view-registrations/{{_id}}" class="btn btn-sm btn-outline-primary">View Registrations</a>
+          <a href="/admin/classes/{{courseId}}/registrations/{{_id}}" class="btn btn-sm btn-outline-primary">View Registrations</a>
         </div>
       </div>
     </div>

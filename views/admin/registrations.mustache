@@ -1,3 +1,45 @@
 {{> partials/head}}
 
+<h1>{{title}}</h1>
+
+{{#registrations.length}}
+<table class="table table-bordered mt-4">
+  <thead class="table-light">
+    <tr>
+      <th>Type</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Price</th>
+      <th>Registered</th>
+      <th style="width: 120px">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#registrations}}
+    <tr>
+      <td>{{type}}</td>
+      <td>{{name}}</td>
+      <td>{{email}}</td>
+      <td>{{phone}}</td>
+      <td>£{{price}}</td>
+      <td>{{registrationDateFormatted}}</td>
+<td>
+  <form method="POST" action="/admin/classes/{{courseId}}/registrations/{{classId}}/delete/{{_id}}">
+    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+  </form>
+</td>
+
+    </tr>
+    {{/registrations}}
+  </tbody>
+</table>
+{{/registrations.length}}
+
+{{^registrations.length}}
+<p class="text-muted">No registrations found for this class.</p>
+{{/registrations.length}}
+
+<a href="/admin/classes/{{course._id}}" class="btn btn-secondary mt-4">← Back to Class Management</a>
+
 {{> partials/footer}}
