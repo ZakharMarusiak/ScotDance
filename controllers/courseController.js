@@ -40,6 +40,7 @@ exports.listCourses = async (req, res) => {
         const allClasses = await ClassModel.getAll();
 
         const visibleCourses = allCourses
+            .filter(course => course.visible)
             .filter(course => {
                 const hasClasses = allClasses.some(c => c.courseId === course._id);
                 const courseEnd = new Date(course.endDate);

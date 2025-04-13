@@ -24,7 +24,7 @@ class CourseModel {
 
     async add(course) {
         return new Promise((resolve, reject) => {
-            db.insert(course, (err, newDoc) => {
+            db.insert({ course, visible: false }, (err, newDoc) => {
                 if (err) return reject(err);
                 resolve(newDoc);
             });
@@ -42,6 +42,19 @@ class CourseModel {
         });
 
     }
-}
 
+    async toggleVisibility(courseId, visible) {
+        return new Promise((resolve, reject) => {
+            db.update(
+                { _id: courseId },
+                { $set: { visible: !!visible } },
+                {},
+                (err, numReplaced) => {
+                    if (err) return reject(err);
+                    resolve(numReplaced);
+                }
+            );
+        });
+    }
+}
 module.exports = new CourseModel();

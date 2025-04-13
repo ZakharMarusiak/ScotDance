@@ -16,13 +16,21 @@ exports.listCourses = async (req, res) => {
             return `${day}/${month}/${year}`;
         }
 
+        const now = new Date();
+
         courses.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
-        const formatted = courses.map(c => ({
-            ...c,
-            startDateFormatted: formatDate(c.startDate),
-            endDateFormatted: formatDate(c.endDate)
-        }));
+        const formatted = courses.map(c => {
+            const courseEnd = new Date(c.endDate);
+            const isEnded = courseEnd < now;
+
+            return {
+                ...c,
+                startDateFormatted: formatDate(c.startDate),
+                endDateFormatted: formatDate(c.endDate),
+                statusIsEnded: isEnded
+            };
+        });
 
         res.render('admin/courses', {
             title: 'Admin – Manage Courses',
@@ -32,6 +40,21 @@ exports.listCourses = async (req, res) => {
         res.render('admin/courses', {
             title: 'Admin – Manage Courses',
             error: 'Failed to load courses.'
+        });
+    }
+};
+
+exports.toggleVisibility = async (req, res) => {
+    const { id } = req.params;
+    const { visible } = req.body;
+
+    try {
+        await CourseModel.toggleVisibility(id, visible === 'true');
+        res.redirect('/admin/courses');
+    } catch {
+        res.render('admin/courses', {
+            title: 'Admin – Manage Courses',
+            error: 'Failed to update course visibility.'
         });
     }
 };

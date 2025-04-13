@@ -6,5 +6,6 @@ const upload = require('../middleware/uploadCourseImage');
 router.get('/', adminCourseController.listCourses);
 router.post('/add', upload.single('image'), adminCourseController.createCourse);
 router.post('/delete/:id', adminCourseController.deleteCourse);
+router.post('/toggle-visibility/:id', adminCourseController.toggleVisibility);
 
 module.exports = router;
