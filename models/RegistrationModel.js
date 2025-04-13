@@ -35,11 +35,21 @@ class RegistrationModel {
         });
     }
 
-    async findExact(email, classId) {
+    async findCourseLevelForClass(courseId, classId) {
         return new Promise((resolve, reject) => {
-            db.findOne({ email, classId }, (err, doc) => {
+            db.find({ courseId, type: 'course', classId: null }, (err, docs) => {
                 if (err) return reject(err);
-                resolve(doc);
+                resolve(docs);
+            });
+        });
+    }
+
+    async deleteById(id) {
+        return new Promise((resolve, reject) => {
+            db.remove({ _id: id }, {}, (err, numRemoved) => {
+                if (err) return reject(err);
+                db.persistence.compactDatafile();
+                resolve(numRemoved);
             });
         });
     }
@@ -54,9 +64,9 @@ class RegistrationModel {
         });
     }
 
-    async deleteByCourseId(courseId) {
+    async deleteByCourseId(courseId, filter = {}) {
         return new Promise((resolve, reject) => {
-            db.remove({ courseId }, { multi: true }, (err, numRemoved) => {
+            db.remove({ courseId, ...filter }, { multi: true }, (err, numRemoved) => {
                 if (err) return reject(err);
                 db.persistence.compactDatafile();
                 resolve(numRemoved);
@@ -64,15 +74,36 @@ class RegistrationModel {
         });
     }
 
-    async deleteById(id) {
+    async adjustOrDeleteCourseRegistrations(courseId, amountToSubtract) {
         return new Promise((resolve, reject) => {
-            db.remove({ _id: id }, {}, (err, numRemoved) => {
+            db.find({ courseId, type: 'course' }, async (err, docs) => {
                 if (err) return reject(err);
-                db.persistence.compactDatafile(); // опціонально: очищення
-                resolve(numRemoved);
+
+                const promises = docs.map(reg => {
+                    const newPrice = (reg.price || 0) - Math.abs(amountToSubtract);
+
+                    if (newPrice <= 0) {
+                        return new Promise((res, rej) => {
+                            db.remove({ _id: reg._id }, {}, (err) => {
+                                if (err) rej(err);
+                                else res(1);
+                            });
+                        });
+                    } else {
+                        return new Promise((res, rej) => {
+                            db.update({ _id: reg._id }, { $set: { price: newPrice } }, {}, (err) => {
+                                if (err) rej(err);
+                                else res(1);
+                            });
+                        });
+                    }
+                });
+
+                await Promise.all(promises);
+                db.persistence.compactDatafile();
+                resolve(promises.length);
             });
         });
     }
 }
-
 module.exports = new RegistrationModel();

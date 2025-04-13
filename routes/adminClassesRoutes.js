@@ -9,6 +9,6 @@ router.get('/:courseId/edit/:classId', adminClassController.renderEditForm);
 router.post('/:courseId/edit/:classId', adminClassController.updateClass);
 router.post('/:courseId/delete/:classId', adminClassController.deleteClass);
 router.get('/:courseId/registrations/:classId', adminClassController.viewRegistrations);
-router.post('/:courseId/registrations/:classId/delete/:registrationId', adminClassController.deleteRegistration);
+router.post('/:courseId/registrations/delete/:registrationId', adminClassController.deleteRegistration);
 
 module.exports = router;

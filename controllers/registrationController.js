@@ -38,7 +38,7 @@ exports.renderClassForm = async (req, res) => {
         const course = await CourseModel.getById(cls.courseId);
         const statusObj = getStatus(cls.day, cls.startTime, cls.endTime);
 
-        if (status !== 'upcoming') {
+        if (statusObj.status !== 'upcoming') {
             return res.render('public/register', {
                 title: 'Register for Class',
                 error: 'This class is not available for booking.'
@@ -81,7 +81,7 @@ exports.handleClassRegistration = async (req, res) => {
 
         const course = await CourseModel.getById(cls.courseId);
         const statusObj = getStatus(cls.day, cls.startTime, cls.endTime);
-        if (status !== 'upcoming') {
+        if (statusObj.status !== 'upcoming') {
             return res.render('public/register', {
                 title: 'Register for Class',
                 error: 'Cannot register for a class that is in the past or ongoing.'
@@ -199,33 +199,29 @@ exports.handleCourseRegistration = async (req, res) => {
             });
         }
 
-        // Check if already registered for the course
         const alreadyRegistered = await RegistrationModel.findByClassOrCourse(email, courseId, null);
-        if (alreadyRegistered) {
+        if (alreadyRegistered?.type === 'course') {
             return res.render('public/register', {
                 title: 'Register for Course',
-                error: 'You are already registered for this course or one of its classes.'
+                error: 'You are already registered for this course.'
             });
         }
 
-        // Add registration entries for each upcoming class
-        for (const cls of upcomingClasses) {
-            const already = await RegistrationModel.findByClassOrCourse(email, courseId, cls._id);
-            if (!already) {
-                await RegistrationModel.add({
-                    type: 'course',
-                    classId: cls._id,
-                    courseId: courseId,
-                    name: name.trim(),
-                    email: email.trim(),
-                    phone: phone.trim(),
-                    price: cls.price,
-                    registrationDate: new Date()
-                });
-            }
-        }
+        await RegistrationModel.deleteByCourseId(courseId, { email, type: 'class' });
 
-        res.redirect(`/courses/${courseId}?success=1`);
+        await RegistrationModel.add({
+            type: 'course',
+            courseId,
+            classId: null,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            price: upcomingClasses.reduce((acc, cls) => acc + cls.price, 0),
+            includedClassIds: upcomingClasses.map(cls => cls._id), // нове поле
+            registrationDate: new Date()
+        });
+
+        res.redirect(`/courses/${courseId}?success=course-upgraded`);
     } catch {
         res.render('public/register', {
             title: 'Register for Course',

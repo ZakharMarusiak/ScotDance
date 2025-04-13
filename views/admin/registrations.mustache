@@ -25,7 +25,7 @@
       <td>£{{price}}</td>
       <td>{{registrationDateFormatted}}</td>
 <td>
-  <form method="POST" action="/admin/classes/{{courseId}}/registrations/{{classId}}/delete/{{_id}}">
+  <form method="POST" action="/admin/classes/{{course._id}}/registrations/delete/{{_id}}?classId={{cls._id}}">
     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
   </form>
 </td>

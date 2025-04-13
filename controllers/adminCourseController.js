@@ -16,6 +16,8 @@ exports.listCourses = async (req, res) => {
             return `${day}/${month}/${year}`;
         }
 
+        courses.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
         const formatted = courses.map(c => ({
             ...c,
             startDateFormatted: formatDate(c.startDate),
@@ -82,11 +84,15 @@ exports.deleteCourse = async (req, res) => {
         }
 
         const classes = await ClassModel.getByCourseId(id);
+
         for (const cls of classes) {
+            await RegistrationModel.deleteByClassId(cls._id);
             await ClassModel.deleteById(cls._id);
         }
 
+        await RegistrationModel.deleteByCourseId(id, { type: 'course' });
         await CourseModel.deleteById(id);
+
         res.redirect('/admin/courses');
     } catch (err) {
         res.render('admin/courses', {

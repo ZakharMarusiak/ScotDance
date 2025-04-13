@@ -220,10 +220,26 @@ exports.deleteClass = async (req, res) => {
     const { courseId, classId } = req.params;
 
     try {
+        const cls = await ClassModel.getById(classId);
+
+        await RegistrationModel.deleteByClassId(classId);
+
+        const now = new Date();
+        const classStart = new Date(cls.day);
+        classStart.setHours(0, 0, 0, 0);
+
+        if (classStart > now) {
+            await RegistrationModel.adjustOrDeleteCourseRegistrations(courseId, cls.price);
+        }
+
         await ClassModel.deleteById(classId);
+
         res.redirect(`/admin/classes/${courseId}`);
     } catch {
-        res.redirect(`/admin/classes/${courseId}`);
+        res.render('admin/classes', {
+            title: 'Manage Classes',
+            error: 'Failed to delete class and registrations.'
+        });
     }
 };
 
@@ -237,10 +253,8 @@ exports.viewRegistrations = async (req, res) => {
     }
 
     try {
-        const registrations = await RegistrationModel.findByClassId(classId);
         const cls = await ClassModel.getById(classId);
         const course = await CourseModel.getById(courseId);
-
         if (!cls || !course) {
             return res.render('admin/registrations', {
                 title: 'Registrations',
@@ -248,7 +262,16 @@ exports.viewRegistrations = async (req, res) => {
             });
         }
 
-        const formattedRegistrations = registrations.map(r => ({
+        const direct = await RegistrationModel.findByClassId(classId);
+        const courseLevelAll = await RegistrationModel.findCourseLevelForClass(courseId);
+
+        const filteredCourseLevel = courseLevelAll.filter(r =>
+            Array.isArray(r.includedClassIds) && r.includedClassIds.includes(classId)
+        );
+
+        const all = [...direct, ...filteredCourseLevel];
+
+        const formattedRegistrations = all.map(r => ({
             ...r,
             registrationDateFormatted: formatDateTime(r.registrationDate)
         }));
@@ -269,13 +292,23 @@ exports.viewRegistrations = async (req, res) => {
 };
 
 exports.deleteRegistration = async (req, res) => {
-    const { courseId, classId, registrationId } = req.params;
+    const { courseId, registrationId } = req.params;
+    const { classId } = req.query;
 
     try {
         await RegistrationModel.deleteById(registrationId);
-        res.redirect(`/admin/classes/${courseId}/registrations/${classId}`);
+
+        if (classId) {
+            res.redirect(`/admin/classes/${courseId}/registrations/${classId}`);
+        } else {
+            res.redirect(`/admin/courses`);
+        }
     } catch {
-        res.render(`/admin/classes/${courseId}/registrations/${classId}`, {
+        const fallback = classId
+            ? `/admin/classes/${courseId}/registrations/${classId}`
+            : `/admin/courses`;
+
+        res.render(fallback, {
             title: 'Registrations',
             error: 'Failed to delete registration.'
         });
