@@ -8,7 +8,6 @@ function formatDate(date) {
 
 function getStatus(day, startTime, endTime) {
     const now = new Date();
-
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
 
@@ -29,20 +28,24 @@ exports.renderClassForm = async (req, res) => {
     try {
         const cls = await ClassModel.getById(classId);
         if (!cls) {
-            return res.render('public/register', {
-                title: 'Register for Class',
-                error: 'Class not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Class not found.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         const course = await CourseModel.getById(cls.courseId);
         const statusObj = getStatus(cls.day, cls.startTime, cls.endTime);
 
         if (statusObj.status !== 'upcoming') {
-            return res.render('public/register', {
-                title: 'Register for Class',
-                error: 'This class is not available for booking.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "This class is not available for booking.");
+                    window.location.href = "/courses/${cls.courseId}";
+                </script>
+            `);
         }
 
         res.render('public/register', {
@@ -59,10 +62,12 @@ exports.renderClassForm = async (req, res) => {
             price: cls.price
         });
     } catch {
-        res.render('public/register', {
-            title: 'Register for Class',
-            error: 'Failed to load class registration form.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to load class registration form.");
+                window.location.href = "/courses";
+            </script>
+        `);
     }
 };
 
@@ -73,27 +78,33 @@ exports.handleClassRegistration = async (req, res) => {
     try {
         const cls = await ClassModel.getById(classId);
         if (!cls) {
-            return res.render('public/register', {
-                title: 'Register for Class',
-                error: 'Class not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Class not found.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         const course = await CourseModel.getById(cls.courseId);
         const statusObj = getStatus(cls.day, cls.startTime, cls.endTime);
         if (statusObj.status !== 'upcoming') {
-            return res.render('public/register', {
-                title: 'Register for Class',
-                error: 'Cannot register for a class that is in the past or ongoing.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Cannot register for a class that is in the past or ongoing.");
+                    window.location.href = "/courses/${cls.courseId}";
+                </script>
+            `);
         }
 
         const existing = await RegistrationModel.findByClassOrCourse(email, cls.courseId, classId);
         if (existing) {
-            return res.render('public/register', {
-                title: 'Register for Class',
-                error: 'You are already registered for this class or the associated course.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "You are already registered for this class or the associated course.");
+                    window.location.href = "/courses/${cls.courseId}";
+                </script>
+            `);
         }
 
         await RegistrationModel.add({
@@ -107,12 +118,19 @@ exports.handleClassRegistration = async (req, res) => {
             registrationDate: new Date()
         });
 
-        res.redirect(`/courses/${cls.courseId}?success=1`);
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Successfully registered for the class.");
+                window.location.href = "/courses/${cls.courseId}";
+            </script>
+        `);
     } catch {
-        res.render('public/register', {
-            title: 'Register for Class',
-            error: 'Registration failed. Please try again.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Registration failed. Please try again.");
+                window.location.href = "/courses";
+            </script>
+        `);
     }
 };
 
@@ -122,29 +140,25 @@ exports.renderCourseForm = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         if (!course) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'Course not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         const allClasses = await ClassModel.getByCourseId(courseId);
         const now = new Date();
         const futureClasses = allClasses.filter(cls => new Date(cls.day) >= now);
 
-        if (!futureClasses.length) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'This course has no upcoming classes.'
-            });
-        }
-
-        const endDate = new Date(course.endDate);
-        if (now > endDate) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'This course has already ended.'
-            });
+        if (!futureClasses.length || new Date(course.endDate) < now) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "This course is not available for registration.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         res.render('public/register', {
@@ -160,10 +174,12 @@ exports.renderCourseForm = async (req, res) => {
             price: futureClasses.reduce((acc, cls) => acc + cls.price, 0)
         });
     } catch {
-        res.render('public/register', {
-            title: 'Register for Course',
-            error: 'Failed to load course registration form.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to load course registration form.");
+                window.location.href = "/courses";
+            </script>
+        `);
     }
 };
 
@@ -174,38 +190,39 @@ exports.handleCourseRegistration = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         if (!course) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'Course not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         const allClasses = await ClassModel.getByCourseId(courseId);
         const now = new Date();
         const upcomingClasses = allClasses.filter(cls => new Date(cls.day) >= now);
 
-        if (!upcomingClasses.length) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'This course has no upcoming classes.'
-            });
-        }
-
-        const endDate = new Date(course.endDate);
-        if (now > endDate) {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'This course has already ended.'
-            });
+        if (!upcomingClasses.length || new Date(course.endDate) < now) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "This course is not available for registration.");
+                    window.location.href = "/courses/${courseId}";
+                </script>
+            `);
         }
 
         const alreadyRegistered = await RegistrationModel.findByClassOrCourse(email, courseId, null);
         if (alreadyRegistered?.type === 'course') {
-            return res.render('public/register', {
-                title: 'Register for Course',
-                error: 'You are already registered for this course.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "You are already registered for this course.");
+                    window.location.href = "/courses/${courseId}";
+                </script>
+            `);
         }
+
+        const existingClassRegistrations = await RegistrationModel.findClassRegistrationsByEmailAndCourse(email, courseId);
+        const hasClassRegistrations = existingClassRegistrations.length > 0;
 
         await RegistrationModel.deleteByCourseId(courseId, { email, type: 'class' });
 
@@ -217,15 +234,26 @@ exports.handleCourseRegistration = async (req, res) => {
             email: email.trim(),
             phone: phone.trim(),
             price: upcomingClasses.reduce((acc, cls) => acc + cls.price, 0),
-            includedClassIds: upcomingClasses.map(cls => cls._id), // нове поле
+            includedClassIds: upcomingClasses.map(cls => cls._id),
             registrationDate: new Date()
         });
 
-        res.redirect(`/courses/${courseId}?success=course-upgraded`);
+        const successMessage = hasClassRegistrations
+            ? "Successfully registered for the course. All previous class registrations were replaced."
+            : "Successfully registered for the course.";
+
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "${successMessage}");
+                window.location.href = "/courses/${courseId}";
+            </script>
+        `);
     } catch {
-        res.render('public/register', {
-            title: 'Register for Course',
-            error: 'Registration failed. Please try again.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Registration failed. Please try again.");
+                window.location.href = "/courses";
+            </script>
+        `);
     }
 };

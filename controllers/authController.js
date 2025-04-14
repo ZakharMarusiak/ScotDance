@@ -10,27 +10,24 @@ exports.handleLogin = (req, res) => {
     const username = String(req.body.username || '').trim();
     const password = String(req.body.password || '').trim();
 
-    if (!username || !password) {
-        return res.render('public/login', {
-            title: 'Login',
-            error: 'All fields are required.'
-        });
-    }
-
     UserModel.findByUsername(username, (err, user) => {
         if (err || !user) {
-            return res.render('public/login', {
-                title: 'Login',
-                error: 'Invalid username or password.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Invalid username or password.");
+                    window.location.href = "/keyboard-cat-zone-login";
+                </script>
+            `);
         }
 
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err || !isMatch) {
-                return res.render('public/login', {
-                    title: 'Login',
-                    error: 'Invalid username or password.'
-                });
+                return res.send(`
+                    <script>
+                        localStorage.setItem("error", "Invalid username or password.");
+                        window.location.href = "/keyboard-cat-zone-login";
+                    </script>
+                `);
             }
 
             const token = jwt.sign(
@@ -46,10 +43,10 @@ exports.handleLogin = (req, res) => {
                 maxAge: 3600000
             });
 
-            res.send(`
+            return res.send(`
                 <script>
-                localStorage.setItem("success", "Welcome back!");
-                window.location.href = "/admin/courses";
+                    localStorage.setItem("success", "Welcome back!");
+                    window.location.href = "/admin/courses";
                 </script>
             `);
         });
@@ -58,5 +55,10 @@ exports.handleLogin = (req, res) => {
 
 exports.logout = (req, res) => {
     res.clearCookie('token');
-    res.redirect('/?success=You have been logged out');
+    res.send(`
+        <script>
+            localStorage.setItem("success", "You have been logged out");
+            window.location.href = "/";
+        </script>
+    `);
 };

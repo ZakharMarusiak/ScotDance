@@ -25,33 +25,9 @@
       <td>£{{price}}</td>
       <td>{{registrationDateFormatted}}</td>
       <td>
-        {{#isCourseRegistration}}
-          <form method="POST" 
-                action="/admin/classes/{{course._id}}/registrations/{{cls._id}}/delete/{{_id}}?partial=true" 
-                onsubmit="return confirm('Remove this class from the course registration?')">
-            <button type="submit" class="btn btn-sm btn-warning me-1">
-              Remove This Class
-            </button>
-          </form>
-
-          <form method="POST" 
-                action="/admin/classes/{{course._id}}/registrations/{{cls._id}}/delete/{{_id}}" 
-                onsubmit="return confirm('Delete the entire course registration?')">
-            <button type="submit" class="btn btn-sm btn-danger">
-              Delete Entire
-            </button>
-          </form>
-        {{/isCourseRegistration}}
-
-        {{^isCourseRegistration}}
-          <form method="POST" 
-                action="/admin/classes/{{course._id}}/registrations/{{cls._id}}/delete/{{_id}}" 
-                onsubmit="return confirm('Delete this registration?')">
-            <button type="submit" class="btn btn-sm btn-danger">
-              Delete
-            </button>
-          </form>
-        {{/isCourseRegistration}}
+        <form method="POST" action="/admin/classes/{{course._id}}/registrations/delete/{{_id}}?classId={{cls._id}}">
+          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
       </td>
     </tr>
     {{/registrations}}

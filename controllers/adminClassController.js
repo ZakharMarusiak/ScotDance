@@ -51,10 +51,12 @@ exports.listClasses = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         if (!course) {
-            return res.render('admin/classes', {
-                title: 'Manage Classes',
-                error: 'Course not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
         }
 
         const startDateFormatted = formatDate(course.startDate);
@@ -88,14 +90,26 @@ exports.renderAddForm = async (req, res) => {
 
     try {
         const course = await CourseModel.getById(courseId);
-        if (!course) return res.redirect('/admin/courses');
+        if (!course) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
+        }
 
         res.render('admin/class-form', {
             title: 'Add Class',
             course
         });
     } catch {
-        res.redirect('/admin/courses');
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to load form.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
@@ -106,20 +120,22 @@ exports.createClass = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         if (!course) {
-            return res.status(404).render('admin/class-form', {
-                title: 'Add Class',
-                error: 'Course not found.',
-                course: { _id: courseId }
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
         }
 
         const error = await validateClassInput(course, { day, startTime, endTime, price });
         if (error) {
-            return res.render('admin/class-form', {
-                title: 'Add Class',
-                error,
-                course
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "${error}");
+                    window.location.href = "/admin/classes/${courseId}/add";
+                </script>
+            `);
         }
 
         await ClassModel.add(courseId, {
@@ -132,9 +148,14 @@ exports.createClass = async (req, res) => {
             price: parseFloat(price)
         });
 
-        res.redirect(`/admin/classes/${courseId}`);
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Class created successfully.");
+                window.location.href = "/admin/classes/${courseId}";
+            </script>
+        `);
     } catch {
-        res.render('admin/class-form', {
+        return res.render('admin/class-form', {
             title: 'Add Class',
             error: 'Unexpected error occurred.',
             course: { _id: courseId }
@@ -148,7 +169,12 @@ exports.renderEditForm = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         const cls = await ClassModel.getById(classId);
-        if (!course || !cls) return res.redirect(`/admin/classes/${courseId}`);
+        if (!course || !cls) return res.send(`
+            <script>
+                localStorage.setItem("error", "Class or course not found.");
+                window.location.href = "/admin/courses";
+            </script>
+            `);
 
         const dayISO = new Date(cls.day).toISOString().split('T')[0];
 
@@ -161,7 +187,12 @@ exports.renderEditForm = async (req, res) => {
             }
         });
     } catch {
-        res.redirect(`/admin/classes/${courseId}`);
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Can not update class details.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
@@ -172,20 +203,23 @@ exports.updateClass = async (req, res) => {
     try {
         const course = await CourseModel.getById(courseId);
         const cls = await ClassModel.getById(classId);
-        if (!course || !cls) return res.redirect(`/admin/classes/${courseId}`);
+        if (!course || !cls) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course or class not found.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
+        }
 
         const error = await validateClassInput(course, { day, startTime, endTime, price }, classId);
         if (error) {
-            return res.render('admin/class-form', {
-                title: 'Edit Class',
-                error,
-                course,
-                class: {
-                    ...req.body,
-                    _id: classId,
-                    day
-                }
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "${error}");
+                    window.location.href = "/admin/classes/${courseId}/edit/${classId}";
+                </script>
+            `);
         }
 
         await ClassModel.updateById(classId, {
@@ -198,9 +232,14 @@ exports.updateClass = async (req, res) => {
             price: parseFloat(price)
         });
 
-        res.redirect(`/admin/classes/${courseId}`);
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Class updated successfully.");
+                window.location.href = "/admin/classes/${courseId}";
+            </script>
+        `);
     } catch {
-        res.render('admin/class-form', {
+        return res.render('admin/classes/${courseId}', {
             title: 'Edit Class',
             error: 'Unexpected error during update.',
             course,
@@ -218,6 +257,14 @@ exports.deleteClass = async (req, res) => {
 
     try {
         const cls = await ClassModel.getById(classId);
+        if (!cls) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Class not found.");
+                    window.location.href = "/admin/classes/${courseId}";
+                </script>
+            `);
+        }
 
         await RegistrationModel.deleteByClassId(classId);
 
@@ -231,9 +278,14 @@ exports.deleteClass = async (req, res) => {
 
         await ClassModel.deleteById(classId);
 
-        res.redirect(`/admin/classes/${courseId}`);
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Class and related registrations deleted.");
+                window.location.href = "/admin/classes/${courseId}";
+            </script>
+        `);
     } catch {
-        res.render('admin/classes', {
+        return res.render('admin/courses', {
             title: 'Manage Classes',
             error: 'Failed to delete class and registrations.'
         });
@@ -252,11 +304,14 @@ exports.viewRegistrations = async (req, res) => {
     try {
         const cls = await ClassModel.getById(classId);
         const course = await CourseModel.getById(courseId);
+
         if (!cls || !course) {
-            return res.render('admin/registrations', {
-                title: 'Registrations',
-                error: 'Course or class not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course or class not found.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
         }
 
         const direct = await RegistrationModel.findByClassId(classId);
@@ -280,10 +335,12 @@ exports.viewRegistrations = async (req, res) => {
             cls
         });
     } catch {
-        res.render('admin/registrations', {
-            title: 'Registrations',
-            error: 'Unable to load registrations.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Unable to load registrations.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
@@ -300,17 +357,42 @@ exports.deleteRegistration = async (req, res) => {
             const result = await RegistrationModel.removeClassFromCourseRegistration(registrationId, classId);
 
             if (result === 'deleted') {
-                return res.redirect(`${redirectTo}?success=Course registration removed (no classes left)`);
+                return res.send(`
+                    <script>
+                        localStorage.setItem("success", "Course registration removed (no classes left)");
+                        window.location.href = "${redirectTo}";
+                    </script>
+                `);
             } else if (result === 'updated') {
-                return res.redirect(`${redirectTo}?success=Class removed from course registration`);
+                return res.send(`
+                    <script>
+                        localStorage.setItem("success", "Class removed from course registration");
+                        window.location.href = "${redirectTo}";
+                    </script>
+                `);
             } else {
-                return res.redirect(`${redirectTo}?error=Could not update course registration`);
+                return res.send(`
+                    <script>
+                        localStorage.setItem("error", "Could not update course registration");
+                        window.location.href = "${redirectTo}";
+                    </script>
+                `);
             }
         } else {
             await RegistrationModel.deleteById(registrationId);
-            return res.redirect(`${redirectTo}?success=Registration deleted successfully`);
+            return res.send(`
+                <script>
+                    localStorage.setItem("success", "Registration deleted successfully");
+                    window.location.href = "${redirectTo}";
+                </script>
+            `);
         }
     } catch {
-        return res.redirect(`${redirectTo}?error=Failed to delete registration`);
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to delete registration");
+                window.location.href = "${redirectTo}";
+            </script>
+        `);
     }
 };

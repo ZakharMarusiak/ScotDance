@@ -23,7 +23,6 @@ function getStatus(day, startTime, endTime) {
     return { status: 'ended', badgeClass: 'bg-secondary' };
 }
 
-
 function getCourseStatus(startDate, endDate) {
     const now = new Date();
     const start = new Date(startDate);
@@ -64,10 +63,12 @@ exports.listCourses = async (req, res) => {
         });
 
     } catch (err) {
-        res.render('public/courses', {
-            title: 'Courses',
-            error: 'Unable to load courses.'
-        });
+        res.send(`
+            <script>
+                localStorage.setItem("error", "Unable to load courses.");
+                window.location.href = "/";
+            </script>
+        `);
     }
 };
 
@@ -76,10 +77,12 @@ exports.viewCourseDetails = async (req, res) => {
         const courseId = req.params.id;
         const course = await CourseModel.getById(courseId);
         if (!course) {
-            return res.render('public/course-details', {
-                title: 'Course Not Found',
-                error: 'Course not found.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course not found.");
+                    window.location.href = "/courses";
+                </script>
+            `);
         }
 
         const classes = await ClassModel.getByCourseId(courseId);
@@ -118,9 +121,11 @@ exports.viewCourseDetails = async (req, res) => {
         });
 
     } catch (err) {
-        res.render('public/course-details', {
-            title: 'Course Details',
-            error: 'Unable to load course.'
-        });
+        res.send(`
+            <script>
+                localStorage.setItem("error", "Unable to load course.");
+                window.location.href = "/courses";
+            </script>
+        `);
     }
 };

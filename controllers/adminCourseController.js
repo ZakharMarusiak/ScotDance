@@ -7,6 +7,7 @@ const fs = require('fs');
 exports.listCourses = async (req, res) => {
     try {
         const courses = await CourseModel.getAll();
+        const now = new Date();
 
         function formatDate(dateString) {
             const d = new Date(dateString);
@@ -16,19 +17,22 @@ exports.listCourses = async (req, res) => {
             return `${day}/${month}/${year}`;
         }
 
-        const now = new Date();
-
         courses.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+        const allClasses = await ClassModel.getAll(); // потрібно додати вище
 
         const formatted = courses.map(c => {
             const courseEnd = new Date(c.endDate);
             const isEnded = courseEnd < now;
 
+            const hasClasses = allClasses.some(cls => cls.courseId === c._id);
+
             return {
                 ...c,
                 startDateFormatted: formatDate(c.startDate),
                 endDateFormatted: formatDate(c.endDate),
-                statusIsEnded: isEnded
+                statusIsEnded: isEnded,
+                isEmpty: !hasClasses
             };
         });
 
@@ -36,11 +40,13 @@ exports.listCourses = async (req, res) => {
             title: 'Admin – Manage Courses',
             courses: formatted
         });
-    } catch (err) {
-        res.render('admin/courses', {
-            title: 'Admin – Manage Courses',
-            error: 'Failed to load courses.'
-        });
+    } catch {
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to load courses.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
@@ -50,49 +56,73 @@ exports.toggleVisibility = async (req, res) => {
 
     try {
         await CourseModel.toggleVisibility(id, visible === 'true');
-        res.redirect('/admin/courses?success=Course visibility updated');
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Course visibility updated.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     } catch {
-        res.render('admin/courses', {
-            title: 'Admin – Manage Courses',
-            error: 'Failed to update course visibility.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to update course visibility.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
 exports.createCourse = async (req, res) => {
     try {
         const { name, startDate, endDate } = req.body;
-        let imagePath = '';
-
-        if (req.file) {
-            const filename = Date.now() + '-' + req.file.originalname;
-            const destinationPath = path.join(__dirname, '../public/photos/courses/', filename);
-            fs.renameSync(req.file.path, destinationPath);
-            imagePath = 'photos/courses/' + filename;
-        }
 
         if (!req.file) {
-            return res.render('admin/courses', {
-                title: 'Admin – Manage Courses',
-                error: 'Course image is required.'
-            });
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "Course image is required.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
         }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (end < start) {
+            return res.send(`
+                <script>
+                    localStorage.setItem("error", "End date must be after the start date.");
+                    window.location.href = "/admin/courses";
+                </script>
+            `);
+        }
+
+        const filename = Date.now() + '-' + req.file.originalname;
+        const destinationPath = path.join(__dirname, '../public/photos/courses/', filename);
+        fs.renameSync(req.file.path, destinationPath);
 
         const course = {
             name: name.trim(),
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            image: imagePath,
+            startDate: start,
+            endDate: end,
+            image: 'photos/courses/' + filename,
             visible: false
         };
 
         await CourseModel.add(course);
-        res.redirect('/admin/courses?success=Course created successfully');
-    } catch (err) {
-        res.render('admin/courses', {
-            title: 'Admin – Manage Courses',
-            error: 'Failed to create course.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Course created successfully.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
+    } catch {
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to create course.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };
 
@@ -116,11 +146,18 @@ exports.deleteCourse = async (req, res) => {
         await RegistrationModel.deleteByCourseId(id, { type: 'course' });
         await CourseModel.deleteById(id);
 
-        res.redirect('/admin/courses?success=Course deleted successfully');
-    } catch (err) {
-        res.render('admin/courses', {
-            title: 'Admin – Manage Courses',
-            error: 'Failed to delete course.'
-        });
+        return res.send(`
+            <script>
+                localStorage.setItem("success", "Course deleted successfully.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
+    } catch {
+        return res.send(`
+            <script>
+                localStorage.setItem("error", "Failed to delete course.");
+                window.location.href = "/admin/courses";
+            </script>
+        `);
     }
 };

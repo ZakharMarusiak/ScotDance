@@ -147,7 +147,15 @@ class RegistrationModel {
             });
         });
     }
-}
 
+    async findClassRegistrationsByEmailAndCourse(email, courseId) {
+        return new Promise((resolve, reject) => {
+            db.find({ email, courseId, type: 'class' }, (err, docs) => {
+                if (err) return reject(err);
+                resolve(docs);
+            });
+        });
+    }
+}
 
 module.exports = new RegistrationModel();
