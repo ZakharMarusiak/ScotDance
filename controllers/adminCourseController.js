@@ -50,7 +50,7 @@ exports.toggleVisibility = async (req, res) => {
 
     try {
         await CourseModel.toggleVisibility(id, visible === 'true');
-        res.redirect('/admin/courses');
+        res.redirect('/admin/courses?success=Course visibility updated');
     } catch {
         res.render('admin/courses', {
             title: 'Admin – Manage Courses',
@@ -64,20 +64,12 @@ exports.createCourse = async (req, res) => {
         const { name, startDate, endDate } = req.body;
         let imagePath = '';
 
-        // Img
         if (req.file) {
             const filename = Date.now() + '-' + req.file.originalname;
             const destinationPath = path.join(__dirname, '../public/photos/courses/', filename);
             fs.renameSync(req.file.path, destinationPath);
             imagePath = 'photos/courses/' + filename;
         }
-
-        const course = {
-            name: name.trim(),
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            image: imagePath
-        };
 
         if (!req.file) {
             return res.render('admin/courses', {
@@ -86,8 +78,16 @@ exports.createCourse = async (req, res) => {
             });
         }
 
+        const course = {
+            name: name.trim(),
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            image: imagePath,
+            visible: false
+        };
+
         await CourseModel.add(course);
-        res.redirect('/admin/courses');
+        res.redirect('/admin/courses?success=Course created successfully');
     } catch (err) {
         res.render('admin/courses', {
             title: 'Admin – Manage Courses',
@@ -116,7 +116,7 @@ exports.deleteCourse = async (req, res) => {
         await RegistrationModel.deleteByCourseId(id, { type: 'course' });
         await CourseModel.deleteById(id);
 
-        res.redirect('/admin/courses');
+        res.redirect('/admin/courses?success=Course deleted successfully');
     } catch (err) {
         res.render('admin/courses', {
             title: 'Admin – Manage Courses',

@@ -105,5 +105,49 @@ class RegistrationModel {
             });
         });
     }
+
+    async removeClassFromCourseRegistration(registrationId, classId) {
+        return new Promise((resolve, reject) => {
+            db.findOne({ _id: registrationId }, async (err, doc) => {
+                if (err || !doc) return reject(err || new Error('Registration not found'));
+
+                if (!Array.isArray(doc.includedClassIds)) return resolve(false);
+
+                const updated = doc.includedClassIds.filter(id => id !== classId);
+
+                if (!updated.length) {
+                    db.remove({ _id: registrationId }, {}, (err) => {
+                        if (err) return reject(err);
+                        resolve('deleted');
+                    });
+                } else {
+                    try {
+                        const cls = await ClassModel.getById(classId);
+                        const classPrice = cls?.price || 0;
+                        const newPrice = Math.max((doc.price || 0) - classPrice, 0);
+
+                        db.update(
+                            { _id: registrationId },
+                            {
+                                $set: {
+                                    includedClassIds: updated,
+                                    price: newPrice
+                                }
+                            },
+                            {},
+                            (err) => {
+                                if (err) return reject(err);
+                                resolve('updated');
+                            }
+                        );
+                    } catch (error) {
+                        reject(error);
+                    }
+                }
+            });
+        });
+    }
 }
+
+
 module.exports = new RegistrationModel();

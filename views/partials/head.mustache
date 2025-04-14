@@ -39,10 +39,28 @@
 
 <main class="container py-4">
 
-{{#error}}
-  <div class="alert alert-danger">{{error}}</div>
-{{/error}}
+<script>
+  const success = localStorage.getItem('success');
 
-{{#success}}
-  <div class="alert alert-success">{{success}}</div>
-{{/success}}
+  if (success) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success text-center m-0 rounded-0';
+    alert.innerText = success;
+
+    document.querySelector('nav').insertAdjacentElement('afterend', alert);
+
+    localStorage.removeItem('success');
+  }
+
+  const error = localStorage.getItem('error');
+
+  if (error) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger text-center m-0 rounded-0';
+    alert.innerText = error;
+
+    document.querySelector('nav').insertAdjacentElement('afterend', alert);
+
+    localStorage.removeItem('error');
+  }
+</script>

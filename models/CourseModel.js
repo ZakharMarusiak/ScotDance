@@ -24,7 +24,12 @@ class CourseModel {
 
     async add(course) {
         return new Promise((resolve, reject) => {
-            db.insert({ course, visible: false }, (err, newDoc) => {
+            const fullCourse = {
+                ...course,
+                visible: false
+            };
+
+            db.insert(fullCourse, (err, newDoc) => {
                 if (err) return reject(err);
                 resolve(newDoc);
             });

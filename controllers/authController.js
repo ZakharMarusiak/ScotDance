@@ -46,12 +46,17 @@ exports.handleLogin = (req, res) => {
                 maxAge: 3600000
             });
 
-            res.redirect('/admin/courses');
+            res.send(`
+                <script>
+                localStorage.setItem("success", "Welcome back!");
+                window.location.href = "/admin/courses";
+                </script>
+            `);
         });
     });
 };
 
 exports.logout = (req, res) => {
     res.clearCookie('token');
-    res.redirect('/');
+    res.redirect('/?success=You have been logged out');
 };
