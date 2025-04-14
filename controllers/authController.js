@@ -39,7 +39,7 @@ exports.handleLogin = (req, res) => {
             res.cookie('token', token, {
                 httpOnly: true,
                 sameSite: 'strict',
-                secure: false, // true on production w/ HTTPS
+                secure: true,
                 maxAge: 3600000
             });
 

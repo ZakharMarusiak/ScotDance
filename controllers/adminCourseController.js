@@ -8,6 +8,7 @@ exports.listCourses = async (req, res) => {
     try {
         const courses = await CourseModel.getAll();
         const now = new Date();
+        const allClasses = await ClassModel.getAll();
 
         function formatDate(dateString) {
             const d = new Date(dateString);
@@ -19,12 +20,9 @@ exports.listCourses = async (req, res) => {
 
         courses.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
-        const allClasses = await ClassModel.getAll(); // потрібно додати вище
-
         const formatted = courses.map(c => {
             const courseEnd = new Date(c.endDate);
             const isEnded = courseEnd < now;
-
             const hasClasses = allClasses.some(cls => cls.courseId === c._id);
 
             return {
@@ -133,11 +131,12 @@ exports.deleteCourse = async (req, res) => {
         const courseToDelete = await CourseModel.getById(id);
         if (courseToDelete?.image) {
             const imagePath = path.join(__dirname, '../public/', courseToDelete.image);
-            if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
         }
 
         const classes = await ClassModel.getByCourseId(id);
-
         for (const cls of classes) {
             await RegistrationModel.deleteByClassId(cls._id);
             await ClassModel.deleteById(cls._id);

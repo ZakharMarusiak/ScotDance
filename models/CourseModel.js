@@ -43,23 +43,31 @@ class CourseModel {
                 db.persistence.compactDatafile();
                 resolve(numRemoved);
             });
-
         });
-
     }
 
-    async toggleVisibility(courseId, visible) {
+    async updateById(id, updates) {
+        return new Promise((resolve, reject) => {
+            db.update({ _id: String(id) }, { $set: updates }, {}, (err, numReplaced) => {
+                if (err) return reject(err);
+                resolve(numReplaced);
+            });
+        });
+    }
+
+    async toggleVisibility(id, visible) {
         return new Promise((resolve, reject) => {
             db.update(
-                { _id: courseId },
+                { _id: String(id) }, // <- ensure it's string
                 { $set: { visible: !!visible } },
                 {},
-                (err, numReplaced) => {
+                (err, numUpdated) => {
                     if (err) return reject(err);
-                    resolve(numReplaced);
+                    resolve(numUpdated);
                 }
             );
         });
     }
 }
+
 module.exports = new CourseModel();
